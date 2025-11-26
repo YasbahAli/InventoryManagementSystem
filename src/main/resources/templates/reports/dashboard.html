@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Reports Dashboard - Inventory Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <!-- Navigation Bar -->
+    <nav class="bg-blue-600 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold">Inventory Management System</h1>
+            <div class="flex items-center gap-4">
+                <a href="/dashboard" class="hover:text-yellow-200">Dashboard</a>
+                <form th:action="@{/logout}" method="post" style="display:inline">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <button type="submit" class="bg-red-500 hover:bg-red-600 px-3 py-2 rounded text-sm">Logout</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- Page Title -->
+        <div class="mb-8">
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">Reports & Analytics</h2>
+            <p class="text-gray-600">Comprehensive inventory and sales analytics</p>
+        </div>
+
+        <!-- Key Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <div class="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Total Products</p>
+                        <p class="text-3xl font-bold text-gray-800" th:text="${summary.totalProducts}">0</p>
+                    </div>
+                    <div class="text-blue-500 text-4xl">📦</div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Total Orders</p>
+                        <p class="text-3xl font-bold text-gray-800" th:text="${summary.totalOrders}">0</p>
+                    </div>
+                    <div class="text-green-500 text-4xl">📋</div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6 border-l-4 border-purple-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Total Sales</p>
+                        <p class="text-3xl font-bold text-gray-800">$<span th:text="${#numbers.formatDecimal(summary.totalCompletedSales, 1, 0)}">0</span></p>
+                    </div>
+                    <div class="text-purple-500 text-4xl">💰</div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6 border-l-4 border-red-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Low Stock Items</p>
+                        <p class="text-3xl font-bold text-gray-800" th:text="${summary.lowStockCount}">0</p>
+                    </div>
+                    <div class="text-red-500 text-4xl">⚠️</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Report Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <!-- Low Stock Report -->
+            <div class="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition-shadow">
+                <div class="bg-red-500 text-white p-6">
+                    <h3 class="text-2xl font-bold">⚠️ Low Stock Alert</h3>
+                    <p class="text-red-100 mt-2">Products below 10 units</p>
+                </div>
+                <div class="p-6">
+                    <p class="text-4xl font-bold text-red-600 mb-4" th:text="${summary.lowStockCount}">0</p>
+                    <p class="text-gray-600 mb-4">Manage inventory levels and avoid stockouts</p>
+                    <a href="/reports/low-stock" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded font-semibold inline-block">View Report</a>
+                </div>
+            </div>
+
+            <!-- Sales Report -->
+            <div class="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition-shadow">
+                <div class="bg-green-500 text-white p-6">
+                    <h3 class="text-2xl font-bold">💰 Sales Analysis</h3>
+                    <p class="text-green-100 mt-2">Sales by product and category</p>
+                </div>
+                <div class="p-6">
+                    <p class="text-4xl font-bold text-green-600 mb-4">$<span th:text="${#numbers.formatDecimal(summary.totalCompletedSales, 1, 0)}">0</span></p>
+                    <p class="text-gray-600 mb-4">Completed orders and revenue trends</p>
+                    <a href="/reports/sales" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-semibold inline-block">View Report</a>
+                </div>
+            </div>
+
+            <!-- Inventory Report -->
+            <div class="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition-shadow">
+                <div class="bg-blue-500 text-white p-6">
+                    <h3 class="text-2xl font-bold">📊 Inventory Valuation</h3>
+                    <p class="text-blue-100 mt-2">Current stock value by category</p>
+                </div>
+                <div class="p-6">
+                    <p class="text-4xl font-bold text-blue-600 mb-4">$<span th:text="${#numbers.formatDecimal(inventoryValue.totalValue, 1, 0)}">0</span></p>
+                    <p class="text-gray-600 mb-4">Total inventory value and distribution</p>
+                    <a href="/reports/inventory" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-semibold inline-block">View Report</a>
+                </div>
+            </div>
+
+            <!-- Order Status Report -->
+            <div class="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition-shadow">
+                <div class="bg-purple-500 text-white p-6">
+                    <h3 class="text-2xl font-bold">📈 Order Status</h3>
+                    <p class="text-purple-100 mt-2">Order fulfillment overview</p>
+                </div>
+                <div class="p-6">
+                    <p class="text-gray-800 mb-4">
+                        <span class="font-bold text-lg" th:text="${summary.completedOrders}">0</span> Completed | 
+                        <span class="font-bold text-lg" th:text="${summary.pendingOrders}">0</span> Pending
+                    </p>
+                    <p class="text-gray-600 mb-4">Order fulfillment and status tracking</p>
+                    <a href="/dashboard" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded font-semibold inline-block">View Dashboard</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-lg shadow p-6 mb-8">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">Quick Actions</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <a href="/products" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-center font-semibold">Manage Products</a>
+                <a href="/orders" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-center font-semibold">View Orders</a>
+                <a sec:authorize="hasRole('ADMIN')" href="/suppliers/list" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded text-center font-semibold">Manage Suppliers</a>
+                <a href="/dashboard" class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded text-center font-semibold">Main Dashboard</a>
+            </div>
+        </div>
+
+        <!-- Admin Export Section -->
+        <div sec:authorize="hasRole('ADMIN')" class="bg-gradient-to-r from-red-50 to-orange-50 rounded-lg shadow p-6 border-l-4 border-red-500">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">🔐 Admin Data Management</h3>
+            <p class="text-gray-600 mb-4">Export inventory and sales data for further analysis</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <a href="/csv/products/export" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold">📥 Export Products CSV</a>
+                <a href="/csv/orders/export" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-semibold">📥 Export Orders CSV</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

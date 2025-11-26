@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Add/Edit Product</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6" th:text="${product.id != null ? 'Edit Product' : 'Add Product'}"></h1>
+
+    <form th:action="@{/products/save}" th:object="${product}" method="post" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        <input type="hidden" th:field="*{id}" />
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2">Name</label>
+            <input type="text" th:field="*{name}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" th:classappend="${#fields.hasErrors('name') ? 'border-red-500' : ''}"/>
+            <div th:if="${#fields.hasErrors('name')}" class="text-red-500 text-sm mt-1" th:errors="*{name}"></div>
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2">Description</label>
+            <input type="text" th:field="*{description}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/>
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2">Quantity</label>
+            <input type="number" th:field="*{quantity}" min="0" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" th:classappend="${#fields.hasErrors('quantity') ? 'border-red-500' : ''}"/>
+            <div th:if="${#fields.hasErrors('quantity')}" class="text-red-500 text-sm mt-1" th:errors="*{quantity}"></div>
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2">Price</label>
+            <input type="number" th:field="*{price}" min="0" step="0.01" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" th:classappend="${#fields.hasErrors('price') ? 'border-red-500' : ''}"/>
+            <div th:if="${#fields.hasErrors('price')}" class="text-red-500 text-sm mt-1" th:errors="*{price}"></div>
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2">Category</label>
+            <select th:field="*{category.id}" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" th:classappend="${#fields.hasErrors('category') ? 'border-red-500' : ''}">
+                <option value="" th:text="'-- Select category --'"></option>
+                <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"></option>
+            </select>
+            <div th:if="${#fields.hasErrors('category')}" class="text-red-500 text-sm mt-1" th:errors="*{category}"></div>
+        </div>
+        <div class="flex items-center justify-between">
+            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+                Save
+            </button>
+            <a th:href="@{/products}" class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">Back</a>
+        </div>
+    </form>
+</div>
+
+</body>
+</html>

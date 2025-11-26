@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Low Stock Report - Inventory Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <!-- Navigation Bar -->
+    <nav class="bg-blue-600 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold">Inventory Management System</h1>
+            <div class="flex items-center gap-4">
+                <a href="/dashboard" class="hover:text-yellow-200">Dashboard</a>
+                <a href="/reports" class="hover:text-yellow-200">Reports</a>
+                <form th:action="@{/logout}" method="post" style="display:inline">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <button type="submit" class="bg-red-500 hover:bg-red-600 px-3 py-2 rounded text-sm">Logout</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- Page Title -->
+        <div class="mb-8">
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">⚠️ Low Stock Alert Report</h2>
+            <p class="text-gray-600">Products with inventory below 10 units</p>
+        </div>
+
+        <!-- Products Table -->
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead class="bg-red-500 text-white">
+                        <tr>
+                            <th class="px-4 py-3 text-left">Product ID</th>
+                            <th class="px-4 py-3 text-left">Product Name</th>
+                            <th class="px-4 py-3 text-left">Category</th>
+                            <th class="px-4 py-3 text-center">Current Stock</th>
+                            <th class="px-4 py-3 text-center">Status</th>
+                            <th class="px-4 py-3 text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(lowStockProducts)}" class="text-center py-8">
+                            <td colspan="6" class="px-4 py-6 text-gray-500">No products with low stock. Everything is in good inventory!</td>
+                        </tr>
+                        <tr th:each="product : ${lowStockProducts}" class="border-b hover:bg-gray-50">
+                            <td class="px-4 py-3 text-gray-700" th:text="${product.id}">1</td>
+                            <td class="px-4 py-3 font-semibold text-gray-800" th:text="${product.name}">Product Name</td>
+                            <td class="px-4 py-3 text-gray-700" th:text="${product.categoryName}">Category</td>
+                            <td class="px-4 py-3 text-center">
+                                <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-bold" th:text="${product.quantity}">0</span>
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                <span th:if="${product.quantity == 0}" class="bg-red-600 text-white px-3 py-1 rounded text-xs font-bold">OUT OF STOCK</span>
+                                <span th:if="${product.quantity > 0 and product.quantity < 5}" class="bg-red-500 text-white px-3 py-1 rounded text-xs font-bold">CRITICAL</span>
+                                <span th:if="${product.quantity >= 5 and product.quantity < 10}" class="bg-yellow-500 text-white px-3 py-1 rounded text-xs font-bold">LOW</span>
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                <a th:href="@{/products}" class="text-blue-600 hover:text-blue-800 font-semibold text-sm">Reorder</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+            <div class="bg-white rounded-lg shadow p-6">
+                <p class="text-gray-600 text-sm mb-2">Total Low Stock Items</p>
+                <p class="text-3xl font-bold text-red-600" th:text="${lowStockTotal}">0</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <p class="text-gray-600 text-sm mb-2">Out of Stock Items</p>
+                <p class="text-3xl font-bold text-red-700" th:text="${outOfStockCount}">0</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <p class="text-gray-600 text-sm mb-2">Critical Stock Items</p>
+                <p class="text-3xl font-bold text-orange-600" th:text="${criticalCount}">0</p>
+            </div>
+        </div>
+
+        <!-- Back Button -->
+        <div class="mt-8">
+            <a href="/reports" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-semibold">Back to Reports</a>
+        </div>
+    </div>
+</body>
+</html>

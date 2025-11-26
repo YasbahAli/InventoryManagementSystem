@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Order</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+
+<div class="container mx-auto px-4 py-8">
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-bold">Order</h1>
+        <div class="space-x-2">
+            <a th:href="@{/dashboard}" class="bg-gray-700 text-white px-3 py-1 rounded">Dashboard</a>
+            <a th:href="@{/products}" class="bg-green-600 text-white px-3 py-1 rounded">Products</a>
+            <a th:href="@{/suppliers/list}" class="bg-yellow-600 text-white px-3 py-1 rounded">Suppliers</a>
+        </div>
+    </div>
+
+    <form th:action="@{/orders/save}" th:object="${order}" method="post" class="space-y-4">
+        <input type="hidden" th:field="*{id}" />
+
+        <div>
+            <label class="block font-medium">Product</label>
+            <select id="productSelect" th:field="*{product.id}" class="mt-1 block w-full rounded border-gray-300" th:classappend="${#fields.hasErrors('product') ? 'border-red-500' : ''}">
+                <option value="" th:text="'-- Select product --'"></option>
+                <option th:each="p : ${products}" th:value="${p.id}" th:text="${p.name}" th:attr="data-price=${p.price}"></option>
+            </select>
+            <div th:if="${#fields.hasErrors('product')}" class="text-red-500 text-sm mt-1" th:errors="*{product}"></div>
+        </div>
+
+        <div>
+            <label class="block font-medium">Supplier</label>
+            <select th:field="*{supplier.id}" class="mt-1 block w-full rounded border-gray-300">
+                <option th:value="${null}" th:text="'-- None --'"></option>
+                <option th:each="s : ${suppliers}" th:value="${s.id}" th:text="${s.name}"></option>
+            </select>
+        </div>
+
+        <div>
+            <label class="block font-medium">Quantity</label>
+            <input id="quantityInput" type="number" th:field="*{quantity}" class="mt-1 block w-full rounded border-gray-300" min="1" th:classappend="${#fields.hasErrors('quantity') ? 'border-red-500' : ''}"/>
+            <div th:if="${#fields.hasErrors('quantity')}" class="text-red-500 text-sm mt-1" th:errors="*{quantity}"></div>
+        </div>
+
+        <div>
+            <label class="block font-medium">Status</label>
+            <select th:field="*{status}" class="mt-1 block w-full rounded border-gray-300" th:classappend="${#fields.hasErrors('status') ? 'border-red-500' : ''}">
+                <option th:each="status : ${T(com.example.inventory.entity.OrderStatus).values()}" th:value="${status}" th:text="${status.name()}"></option>
+            </select>
+            <div th:if="${#fields.hasErrors('status')}" class="text-red-500 text-sm mt-1" th:errors="*{status}"></div>
+        </div>
+
+        <div>
+            <label class="block font-medium">Total Price</label>
+            <input id="totalPriceInput" name="totalPrice" type="text" th:value="${order.totalPrice}" readonly class="mt-1 block w-full rounded border-gray-300 bg-gray-100" />
+        </div>
+
+        <div>
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Save</button>
+            <a th:href="@{/orders}" class="ml-2 text-gray-700">Cancel</a>
+        </div>
+        <div th:if="${errorMessage}" class="mt-2 text-red-600"> 
+            <p th:text="${errorMessage}"></p>
+        </div>
+    </form>
+</div>
+
+<script>
+    function parsePrice(v) { return v == null || v === '' ? 0 : parseFloat(v); }
+    const productSelect = document.getElementById('productSelect');
+    const quantityInput = document.getElementById('quantityInput');
+    const totalPriceInput = document.getElementById('totalPriceInput');
+
+    function updateTotal() {
+        const selected = productSelect.options[productSelect.selectedIndex];
+        const price = parsePrice(selected ? selected.getAttribute('data-price') : 0);
+        const qty = parseInt(quantityInput.value) || 0;
+        totalPriceInput.value = (price * qty).toFixed(2);
+    }
+
+    productSelect && productSelect.addEventListener('change', updateTotal);
+    quantityInput && quantityInput.addEventListener('input', updateTotal);
+    // initialize
+    updateTotal();
+</script>
+
+</body>
+</html>

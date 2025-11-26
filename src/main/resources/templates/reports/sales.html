@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sales Report - Inventory Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100">
+    <!-- Navigation Bar -->
+    <nav class="bg-blue-600 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold">Inventory Management System</h1>
+            <div class="flex items-center gap-4">
+                <a href="/dashboard" class="hover:text-yellow-200">Dashboard</a>
+                <a href="/reports" class="hover:text-yellow-200">Reports</a>
+                <form th:action="@{/logout}" method="post" style="display:inline">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <button type="submit" class="bg-red-500 hover:bg-red-600 px-3 py-2 rounded text-sm">Logout</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- Page Title -->
+        <div class="mb-8">
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">Sales Report</h2>
+            <p class="text-gray-600">Comprehensive sales analysis by product and category</p>
+        </div>
+
+        <!-- Total Sales Summary -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow p-6 text-white">
+                <p class="text-sm opacity-90">Total Sales (Last 12 Months)</p>
+                <p class="text-3xl font-bold">$<span th:text="${#numbers.formatDecimal(salesByProduct.totalSales, 1, 2)}">0.00</span></p>
+            </div>
+
+            <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow p-6 text-white">
+                <p class="text-sm opacity-90">Category Sales</p>
+                <p class="text-3xl font-bold" th:text="${#lists.size(salesByCategory.labels)}">0</p>
+            </div>
+
+            <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg shadow p-6 text-white">
+                <p class="text-sm opacity-90">Top Products</p>
+                <p class="text-3xl font-bold" th:text="${#lists.size(salesByProduct.labels)}">0</p>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Sales by Product -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Top 10 Products by Sales</h3>
+                <div class="relative h-96">
+                    <canvas id="productSalesChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Sales by Category -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Sales Distribution by Category</h3>
+                <div class="relative h-96">
+                    <canvas id="categorySalesChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Trend -->
+        <div class="bg-white rounded-lg shadow p-6 mb-8">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">Monthly Sales Trend (Last 12 Months)</h3>
+            <div class="relative h-96">
+                <canvas id="monthlySalesChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Detailed Tables -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Product Sales Table -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Sales by Product</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="px-4 py-2 text-left">Product</th>
+                                <th class="px-4 py-2 text-right">Sales</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="label, stat : ${salesByProduct.labels}" class="border-b hover:bg-gray-50">
+                                <td class="px-4 py-2" th:text="${label}">Product</td>
+                                <td class="px-4 py-2 text-right font-semibold">$<span th:text="${#numbers.formatDecimal(salesByProduct.data[stat.index], 1, 2)}">0.00</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Category Sales Table -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Sales by Category</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="px-4 py-2 text-left">Category</th>
+                                <th class="px-4 py-2 text-right">Sales</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="label, stat : ${salesByCategory.labels}" class="border-b hover:bg-gray-50">
+                                <td class="px-4 py-2" th:text="${label}">Category</td>
+                                <td class="px-4 py-2 text-right font-semibold">$<span th:text="${#numbers.formatDecimal(salesByCategory.data[stat.index], 1, 2)}">0.00</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Back Button -->
+        <div class="mt-8">
+            <a href="/reports" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-semibold">Back to Reports</a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeProductSalesChart();
+            initializeCategorySalesChart();
+            initializeMonthlySalesChart();
+        });
+
+        function initializeProductSalesChart() {
+            const labels = /*[[${salesByProduct.labels}]]*/ [];
+            const data = /*[[${salesByProduct.data}]]*/ [];
+            
+            const ctx = document.getElementById('productSalesChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Sales ($)',
+                        data: data,
+                        backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: { legend: { display: false } },
+                    scales: { x: { beginAtZero: true } }
+                }
+            });
+        }
+
+        function initializeCategorySalesChart() {
+            const labels = /*[[${salesByCategory.labels}]]*/ [];
+            const data = /*[[${salesByCategory.data}]]*/ [];
+            
+            const ctx = document.getElementById('categorySalesChart').getContext('2d');
+            const colors = ['rgba(59, 130, 246, 0.8)', 'rgba(16, 185, 129, 0.8)', 'rgba(139, 92, 246, 0.8)', 'rgba(245, 158, 11, 0.8)', 'rgba(239, 68, 68, 0.8)'];
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors,
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+
+        function initializeMonthlySalesChart() {
+            const labels = /*[[${monthlySales.labels}]]*/ [];
+            const data = /*[[${monthlySales.data}]]*/ [];
+            
+            const ctx = document.getElementById('monthlySalesChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Sales ($)',
+                        data: data,
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top' } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

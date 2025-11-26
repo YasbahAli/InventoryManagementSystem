@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Orders</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+
+<div class="container mx-auto px-4 py-8">
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-3xl font-bold">Orders</h1>
+        <div class="space-x-2">
+            <a th:href="@{/dashboard}" class="bg-gray-700 text-white px-3 py-1 rounded">Dashboard</a>
+            
+            <!-- Admin-only buttons -->
+            <a sec:authorize="hasRole('ADMIN')" th:href="@{/orders/add}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Add Order</a>
+            <a sec:authorize="hasRole('ADMIN')" th:href="@{/csv/orders/import}" class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">Import CSV</a>
+            <a sec:authorize="hasRole('ADMIN')" th:href="@{/csv/orders/export}" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">Export CSV</a>
+            
+            <!-- Available to all authenticated users -->
+            <a th:href="@{/products}" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Products</a>
+            <a th:href="@{/suppliers/list}" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">Suppliers</a>
+        </div>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="min-w-full bg-white shadow rounded-lg">
+            <thead class="bg-gray-200">
+                <tr>
+                    <th class="py-2 px-4 text-left">ID</th>
+                    <th class="py-2 px-4 text-left">Product
+                        <a th:href="@{'/orders?page=' + ${currentPage} + '&size=' + ${pageSize} + '&sortField=product.name&sortDir=' + ${reverseSortDir}}">↕</a>
+                    </th>
+                    <th class="py-2 px-4 text-left">Quantity</th>
+                    <th class="py-2 px-4 text-left">Total Price
+                        <a th:href="@{'/orders?page=' + ${currentPage} + '&size=' + ${pageSize} + '&sortField=totalPrice&sortDir=' + ${reverseSortDir}}">↕</a>
+                    </th>
+                    <th class="py-2 px-4 text-left">Order Date
+                        <a th:href="@{'/orders?page=' + ${currentPage} + '&size=' + ${pageSize} + '&sortField=orderDate&sortDir=' + ${reverseSortDir}}">↕</a>
+                    </th>
+                    <th class="py-2 px-4 text-left">Status</th>
+                    <th class="py-2 px-4 text-left">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="order : ${ordersPage.content}" class="border-b">
+                    <td class="py-2 px-4" th:text="${order.id}"></td>
+                    <td class="py-2 px-4" th:text="${order.product.name}"></td>
+                    <td class="py-2 px-4" th:text="${order.quantity}"></td>
+                    <td class="py-2 px-4" th:text="${order.totalPrice}"></td>
+                    <td class="py-2 px-4" th:text="${#dates.format(order.orderDate, 'yyyy-MM-dd HH:mm')}"></td>
+                    <td class="py-2 px-4" th:text="${order.status}"></td>
+                    <td class="py-2 px-4">
+                        <!-- Admin-only actions -->
+                        <a sec:authorize="hasRole('ADMIN')" th:href="@{'/orders/edit/' + ${order.id}}" class="text-blue-600 hover:underline">Edit</a>
+                        <a sec:authorize="hasRole('ADMIN')" th:href="@{'/orders/delete/' + ${order.id}}" class="text-red-600 hover:underline ml-2">Delete</a>
+                        
+                        <!-- Fallback message for non-admin users -->
+                        <span sec:authorize="!hasRole('ADMIN')" class="text-gray-500 italic text-sm">View only</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-4 flex items-center justify-between">
+        <div>
+            <span th:text="'Page ' + ${ordersPage.number + 1} + ' of ' + ${ordersPage.totalPages}"></span>
+        </div>
+        <div class="space-x-2">
+            <a th:if="${ordersPage.hasPrevious()}" th:href="@{'/orders?page=' + ${ordersPage.number - 1} + '&size=' + ${pageSize} + '&sortField=' + ${sortField} + '&sortDir=' + ${sortDir}}" class="px-3 py-1 bg-gray-200 rounded">Previous</a>
+            <a th:if="${ordersPage.hasNext()}" th:href="@{'/orders?page=' + ${ordersPage.number + 1} + '&size=' + ${pageSize} + '&sortField=' + ${sortField} + '&sortDir=' + ${sortDir}}" class="px-3 py-1 bg-gray-200 rounded">Next</a>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
